@@ -26573,7 +26573,12 @@
 	        React.createElement(
 	            'h4',
 	            null,
-	            'About Component'
+	            'About'
+	        ),
+	        React.createElement(
+	            'p',
+	            null,
+	            'This is a page giving you information on what we\'re allll about'
 	        )
 	    );
 	};
@@ -26595,7 +26600,7 @@
 	        React.createElement(
 	            'h4',
 	            null,
-	            'Examples Component'
+	            'Examples'
 	        )
 	    );
 	};
