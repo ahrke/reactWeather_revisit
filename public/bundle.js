@@ -25022,11 +25022,11 @@
 
 	        return React.createElement(
 	            'div',
-	            null,
+	            { className: 'text-center' },
 	            React.createElement(
-	                'h4',
-	                null,
-	                'Weather Component'
+	                'h1',
+	                { className: 'text' },
+	                'Get Weather'
 	            ),
 	            React.createElement(WeatherForm, { onSearch: this.handleSearch }),
 	            React.createElement('br', null),
@@ -25069,7 +25069,7 @@
 	                React.createElement('br', null),
 	                React.createElement(
 	                    'button',
-	                    { type: 'submit' },
+	                    { className: 'button hollow expand', type: 'submit' },
 	                    'give me the weather!'
 	                )
 	            )
@@ -26670,23 +26670,23 @@
 /* 255 */
 /***/ function(module, exports, __webpack_require__) {
 
-	'use strict';
+	"use strict";
 
 	var React = __webpack_require__(8);
 
 	var About = function About(props) {
 	    return React.createElement(
-	        'div',
-	        null,
+	        "div",
+	        { className: "text-center" },
 	        React.createElement(
-	            'h4',
+	            "h1",
 	            null,
-	            'About'
+	            "About"
 	        ),
 	        React.createElement(
-	            'p',
+	            "p",
 	            null,
-	            'This is a page giving you information on what we\'re allll about'
+	            "This is a page giving you information on what we're allll about...which is provide weather. Now go search for weather."
 	        )
 	    );
 	};

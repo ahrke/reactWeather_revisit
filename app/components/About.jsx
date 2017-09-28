@@ -2,9 +2,9 @@ var React = require('react');
 
 var About = (props) => {
     return (
-            <div>
-                <h4>About</h4>
-                <p>This is a page giving you information on what we're allll about</p>
+            <div className="text-center">
+                <h1>About</h1>
+                <p>This is a page giving you information on what we're allll about...which is provide weather. Now go search for weather.</p>
             </div>
         );
 }
