@@ -106,12 +106,15 @@
 
 	var Main = __webpack_require__(223);
 	var Weather = __webpack_require__(225);
-	var About = __webpack_require__(255);
-	var Examples = __webpack_require__(256);
+	var About = __webpack_require__(256);
+	var Examples = __webpack_require__(257);
 
 	//load foundation
-	__webpack_require__(257);
+	__webpack_require__(258);
 	$(document).foundation();
+
+	//load scss
+	__webpack_require__(262);
 
 	ReactDOM.render(React.createElement(
 	    Router,
@@ -24864,7 +24867,7 @@
 	            { className: 'row' },
 	            React.createElement(
 	                'div',
-	                { className: 'columns medium-6 large-4 small-centered' },
+	                { className: 'page-title columns medium-6 large-4 small-centered' },
 	                props.children
 	            )
 	        )
@@ -24890,6 +24893,18 @@
 	var Nav = React.createClass({
 	    displayName: 'Nav',
 
+	    handleSearch: function handleSearch(e) {
+	        e.preventDefault();
+
+	        var location = this.refs.search.value;
+	        var encodedLocation = encodeURIComponent(location);
+
+	        if (location.length > 0) {
+	            this.refs.search.value = "";
+
+	            window.location.hash = '#/?location=' + encodedLocation;
+	        }
+	    },
 	    render: function render() {
 	        return React.createElement(
 	            'div',
@@ -24939,14 +24954,14 @@
 	                { className: 'top-bar-right' },
 	                React.createElement(
 	                    'form',
-	                    null,
+	                    { onSubmit: this.handleSearch },
 	                    React.createElement(
 	                        'ul',
 	                        { className: 'menu' },
 	                        React.createElement(
 	                            'li',
 	                            null,
-	                            React.createElement('input', { type: 'search', placeholder: 'Where do you want the weather for?' })
+	                            React.createElement('input', { type: 'search', ref: 'search', placeholder: 'Where do you want the weather for?' })
 	                        ),
 	                        React.createElement(
 	                            'li',
@@ -24972,6 +24987,7 @@
 	var WeatherForm = __webpack_require__(226);
 	var WeatherOutput = __webpack_require__(227);
 	var openWeatherMap = __webpack_require__(228);
+	var ErrorModal = __webpack_require__(255);
 
 	var Weather = React.createClass({
 	    displayName: 'Weather',
@@ -24984,28 +25000,46 @@
 	    handleSearch: function handleSearch(location) {
 	        var thisSearch = this;
 	        this.setState({
-	            isLoading: true
+	            isLoading: true,
+	            errorMessage: undefined,
+	            location: undefined,
+	            temp: undefined
 	        });
 	        openWeatherMap.getTemp(location).then(function (temp) {
 	            thisSearch.setState({
 	                location: location,
-	                temp: temp
-	            });
-	            thisSearch.setState({
+	                temp: temp,
 	                isLoading: false
 	            });
-	        }, function (err) {
-	            alert(err);
+	        }, function (e) {
+	            thisSearch.setState({
+	                isLoading: false,
+	                errorMessage: e.message
+	            });
 	        });
-	        thisSearch.setState({
-	            isLoading: false
-	        });
+	    },
+	    componentDidMount: function componentDidMount() {
+	        var location = this.props.location.query.location;
+
+	        if (location && location.length > 0) {
+	            this.handleSearch(location);
+	            window.location.hash = '#/';
+	        }
+	    },
+	    componentWillReceiveProps: function componentWillReceiveProps(newProps) {
+	        var location = newProps.location.query.location;
+
+	        if (location && location.length > 0) {
+	            this.handleSearch(location);
+	            window.location.hash = '#/';
+	        }
 	    },
 	    render: function render() {
 	        var _state = this.state;
 	        var isLoading = _state.isLoading;
 	        var location = _state.location;
 	        var temp = _state.temp;
+	        var errorMessage = _state.errorMessage;
 
 
 	        function renderMessage() {
@@ -25020,17 +25054,24 @@
 	            }
 	        };
 
+	        function renderError() {
+	            if (typeof errorMessage === 'string') {
+	                return React.createElement(ErrorModal, { message: errorMessage });
+	            }
+	        };
+
 	        return React.createElement(
 	            'div',
 	            { className: 'text-center' },
 	            React.createElement(
 	                'h1',
-	                { className: 'text' },
+	                { className: 'text page-title' },
 	                'Get Weather'
 	            ),
 	            React.createElement(WeatherForm, { onSearch: this.handleSearch }),
 	            React.createElement('br', null),
-	            renderMessage()
+	            renderMessage(),
+	            renderError()
 	        );
 	    }
 	});
@@ -25066,10 +25107,9 @@
 	                'form',
 	                { onSubmit: this.onFormSubmit },
 	                React.createElement('input', { type: 'text', ref: 'location', placeholder: 'enter your desired location here' }),
-	                React.createElement('br', null),
 	                React.createElement(
 	                    'button',
-	                    { className: 'button hollow expand', type: 'submit' },
+	                    { className: 'button hollow expanded', type: 'submit' },
 	                    'give me the weather!'
 	                )
 	            )
@@ -25127,7 +25167,8 @@
 
 	        return axios.get(requestUrl).then(function (res) {
 	            if (res.data.cod && res.data.message) {
-	                throw new Error(res.data.message);
+	                //throw new Error(res.data.message);
+	                throw new Error("Unable to fetch weather for that location");
 	            } else {
 	                return res.data.main.temp;
 	            }
@@ -26670,6 +26711,61 @@
 /* 255 */
 /***/ function(module, exports, __webpack_require__) {
 
+	/* WEBPACK VAR INJECTION */(function($) {'use strict';
+
+	var React = __webpack_require__(8);
+
+	var ErrorModal = React.createClass({
+	    displayName: 'ErrorModal',
+
+	    getDefaultProps: function getDefaultProps() {
+	        return {
+	            title: 'Error'
+	        };
+	    },
+	    propTypes: {
+	        title: React.PropTypes.string,
+	        message: React.PropTypes.string.isRequired
+	    },
+	    componentDidMount: function componentDidMount() {
+	        var modal = new Foundation.Reveal($('#error-modal'));
+	        modal.open();
+	    },
+	    render: function render() {
+	        var _props = this.props;
+	        var title = _props.title;
+	        var message = _props.message;
+
+
+	        return React.createElement(
+	            'div',
+	            { className: 'reveal tiny text-center', 'data-reveal': '', id: 'error-modal' },
+	            React.createElement(
+	                'h4',
+	                null,
+	                title
+	            ),
+	            React.createElement(
+	                'p',
+	                null,
+	                message
+	            ),
+	            React.createElement(
+	                'button',
+	                { className: 'button hollow', 'data-close': '' },
+	                'Okay'
+	            )
+	        );
+	    }
+	});
+
+	module.exports = ErrorModal;
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(7)))
+
+/***/ },
+/* 256 */
+/***/ function(module, exports, __webpack_require__) {
+
 	"use strict";
 
 	var React = __webpack_require__(8);
@@ -26694,7 +26790,7 @@
 	module.exports = About;
 
 /***/ },
-/* 256 */
+/* 257 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -26748,16 +26844,16 @@
 	module.exports = Examples;
 
 /***/ },
-/* 257 */
+/* 258 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(258);
+	var content = __webpack_require__(259);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(260)(content, {});
+	var update = __webpack_require__(261)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -26774,10 +26870,10 @@
 	}
 
 /***/ },
-/* 258 */
+/* 259 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(259)();
+	exports = module.exports = __webpack_require__(260)();
 	// imports
 
 
@@ -26788,7 +26884,7 @@
 
 
 /***/ },
-/* 259 */
+/* 260 */
 /***/ function(module, exports) {
 
 	/*
@@ -26844,7 +26940,7 @@
 
 
 /***/ },
-/* 260 */
+/* 261 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*
@@ -27095,6 +27191,46 @@
 		if(oldSrc)
 			URL.revokeObjectURL(oldSrc);
 	}
+
+
+/***/ },
+/* 262 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// style-loader: Adds some css to the DOM by adding a <style> tag
+
+	// load the styles
+	var content = __webpack_require__(263);
+	if(typeof content === 'string') content = [[module.id, content, '']];
+	// add the styles to the DOM
+	var update = __webpack_require__(261)(content, {});
+	if(content.locals) module.exports = content.locals;
+	// Hot Module Replacement
+	if(false) {
+		// When the styles change, update the <style> tags
+		if(!content.locals) {
+			module.hot.accept("!!./../../node_modules/css-loader/index.js!./../../node_modules/sass-loader/index.js!./app.scss", function() {
+				var newContent = require("!!./../../node_modules/css-loader/index.js!./../../node_modules/sass-loader/index.js!./app.scss");
+				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+				update(newContent);
+			});
+		}
+		// When the module is disposed, remove the <style> tags
+		module.hot.dispose(function() { update(); });
+	}
+
+/***/ },
+/* 263 */
+/***/ function(module, exports, __webpack_require__) {
+
+	exports = module.exports = __webpack_require__(260)();
+	// imports
+
+
+	// module
+	exports.push([module.id, ".page-title {\n  margin-top: 2.5rem;\n  margin-bottom: 2.5rem; }\n", ""]);
+
+	// exports
 
 
 /***/ }
